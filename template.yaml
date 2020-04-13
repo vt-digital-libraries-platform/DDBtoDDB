@@ -1,0 +1,44 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  DDBtoDDB
+
+  Restore date from source DDB to target DDB
+Parameters: 
+    Region:
+      Type: String
+      Default: "us-east-1"
+    SourceTable:
+      Type: String
+      Default: "SourceTable"
+    TargetTable:
+      Type: String
+      Default: "TargetTable"
+
+Resources:
+  restoreDDB:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: .
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.7
+      MemorySize: 2048
+      Timeout: 300
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref SourceTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TargetTable
+      Environment:
+        Variables:
+          Region: !Ref Region
+          Source_Table: !Ref SourceTable
+          Target_Table: !Ref TargetTable
+
+Outputs:
+  restoreDDB:
+    Description: "DDBtoDDB Lambda Function ARN"
+    Value: !GetAtt restoreDDB.Arn
+  restoreDDBIamRole:
+    Description: "Implicit IAM Role created for restoreDDB function"
+    Value: !GetAtt restoreDDBRole.Arn
